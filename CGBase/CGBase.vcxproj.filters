@@ -63,7 +63,7 @@
     <ClCompile Include="buffer.cpp">
       <Filter>Source Files\objects</Filter>
     </ClCompile>
-    <ClCompile Include="camera.cpp">
+    <ClCompile Include="orbitalcamera.cpp">
       <Filter>Source Files\camera</Filter>
     </ClCompile>
     <ClCompile Include="treebuffer.cpp">
@@ -80,6 +80,9 @@
     </ClCompile>
     <ClCompile Include="groundbuffer.cpp">
       <Filter>Source Files\objects\ground</Filter>
+    </ClCompile>
+    <ClCompile Include="camera.cpp">
+      <Filter>Source Files\camera</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -112,7 +115,7 @@
     <ClInclude Include="buffer.hpp">
       <Filter>Header Files\objects</Filter>
     </ClInclude>
-    <ClInclude Include="camera.hpp">
+    <ClInclude Include="orbitalcamera.hpp">
       <Filter>Header Files\camera</Filter>
     </ClInclude>
     <ClInclude Include="cube.hpp">
@@ -126,6 +129,9 @@
     </ClInclude>
     <ClInclude Include="groundbuffer.hpp">
       <Filter>Header Files\objects\ground</Filter>
+    </ClInclude>
+    <ClInclude Include="camera.hpp">
+      <Filter>Header Files\camera</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -143,6 +143,7 @@
   <ItemGroup>
     <ClCompile Include="buffer.cpp" />
     <ClCompile Include="camera.cpp" />
+    <ClCompile Include="orbitalcamera.cpp" />
     <ClCompile Include="ground.cpp" />
     <ClCompile Include="groundbuffer.cpp" />
     <ClCompile Include="main.cpp" />
@@ -162,6 +163,7 @@
   <ItemGroup>
     <ClInclude Include="buffer.hpp" />
     <ClInclude Include="camera.hpp" />
+    <ClInclude Include="orbitalcamera.hpp" />
     <ClInclude Include="ground.hpp" />
     <ClInclude Include="groundbuffer.hpp" />
     <ClInclude Include="ibufferable.hpp" />

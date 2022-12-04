@@ -58,7 +58,7 @@ struct Renderer {
 };
 
 struct EngineState {
-    OrbitalCamera* mOrbitalCamera;
+    Camera* mCamera;
     Input* mInput;
     Renderer* mRenderer;
     float mDT;
@@ -86,7 +86,7 @@ static void ErrorCallback(int error, const char* description) {
 static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mode) {
     EngineState* State = (EngineState*)glfwGetWindowUserPointer(window);
     Input* UserInput = State->mInput;
-    bool IsDown = action == GLFW_PRESS || action == GLFW_REPEAT;
+    bool IsDown = action == GLFW_PRESS || action == GLFW_REPEAT || action == GLFW_KEY_DOWN;
     switch (key) {
     case GLFW_KEY_A: UserInput->Left = IsDown; break;
     case GLFW_KEY_D: UserInput->Right = IsDown; break;
@@ -95,6 +95,43 @@ static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, i
     case GLFW_KEY_R: UserInput->ChangeRenderable = IsDown; break;
     case GLFW_KEY_ESCAPE: glfwSetWindowShouldClose(window, GLFW_TRUE); break;
     }
+}
+
+float lastX = 400, lastY = 300;
+bool firstMouse = true;
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+    EngineState* State = (EngineState*)glfwGetWindowUserPointer(window);
+    Camera* Camera = State->mCamera;
+
+    if (firstMouse)
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos;
+    lastX = xpos;
+    lastY = ypos;
+
+    float sensitivity = 0.2f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    Camera->mYaw += xoffset;
+    Camera->mPitch += yoffset;
+
+    if (Camera->mPitch > 89.0f)
+        Camera->mPitch = 89.0f;
+    if (Camera->mPitch < -89.0f)
+        Camera->mPitch = -89.0f;
+
+    glm::vec3 direction;
+    direction.x = cos(glm::radians(Camera->mYaw)) * cos(glm::radians(Camera->mPitch));
+    direction.y = sin(glm::radians(Camera->mPitch));
+    direction.z = sin(glm::radians(Camera->mYaw)) * cos(glm::radians(Camera->mPitch));
+    Camera->mCameraFront = glm::normalize(direction);
 }
 
 /**
@@ -106,7 +143,12 @@ static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, i
  */
 static void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
     EngineState* State = (EngineState*)glfwGetWindowUserPointer(window);
-    State->mRenderer->mScalingFactor += yoffset * State->mDT;
+    Camera* Camera = State->mCamera;
+    Camera->mFOV -= (float)yoffset;
+    if (Camera->mFOV < 1.0f)
+        Camera->mFOV = 1.0f;
+    if (Camera->mFOV > 90.0f)
+        Camera->mFOV = 90.0f;
 }
 
 /**
@@ -127,25 +169,28 @@ static void FramebufferSizeCallback(GLFWwindow* window, int width, int height) {
  *
  * @param state Engine State
  */
-static void HandleInput(EngineState* state) {
+static void HandleInput(EngineState* state, float &currentFrame, float &lastFrame, float &deltaTime) {
     Input* UserInput = state->mInput;
-    OrbitalCamera* Camera = state->mOrbitalCamera;
+    Camera* Camera = state->mCamera;
     Renderer* Renderer = state->mRenderer;
     float dt = state->mDT;
+    deltaTime = currentFrame - lastFrame;
+    lastFrame = currentFrame;
+    Camera->mCameraSpeed = 2.5f * deltaTime;
     if (UserInput->Left) {
-        Camera->Rotate(-1.0f, 0.0f, dt);
+        Camera->mCameraPosition -= glm::normalize(glm::cross(Camera->mCameraFront, Camera->mCameraUp)) * Camera->mCameraSpeed;
         std::cout << "A pressed." << std::endl;
     }
     if (UserInput->Right) {
-        Camera->Rotate(1.0f, 0.0f, dt);
+        Camera->mCameraPosition += glm::normalize(glm::cross(Camera->mCameraFront, Camera->mCameraUp)) * Camera->mCameraSpeed;
         std::cout << "D pressed." << std::endl;
     }
     if (UserInput->Down) {
-        Camera->Rotate(0.0f, 1.0f, dt);
+        Camera->mCameraPosition -= Camera->mCameraSpeed * Camera->mCameraFront;
         std::cout << "S pressed." << std::endl;
     }
     if (UserInput->Up) {
-        Camera->Rotate(0.0f, -1.0f, dt);
+        Camera->mCameraPosition += Camera->mCameraSpeed * Camera->mCameraFront;
         std::cout << "W pressed." << std::endl;
     }
     if (UserInput->ChangeRenderable) {
@@ -159,6 +204,8 @@ static void HandleInput(EngineState* state) {
 void RenderSun(float& sc, Shader& BasicShader, glm::mat4& ModelMatrix, Cube& SunBase, Cube& SunRotatedX);
 
 void RenderGround(glm::mat4& ModelMatrix, Shader& BasicShader, Ground& Ground);
+
+void RenderTree(glm::mat4& ModelMatrix, Shader& BasicShader, Tree& Tree, glm::vec3 Position);
 
 int main() {
     GLFWwindow* Window = 0;
@@ -181,6 +228,7 @@ int main() {
 
     glfwMakeContextCurrent(Window);
     glfwSetKeyCallback(Window, KeyCallback);
+    glfwSetCursorPosCallback(Window, mouse_callback);
     glfwSetScrollCallback(Window, ScrollCallback);
     glfwSetFramebufferSizeCallback(Window, FramebufferSizeCallback);
 
@@ -191,15 +239,12 @@ int main() {
         return -1;
     }
 
-    OrbitalCamera Camera(90.0f, 10.0f, 5.0f, 10.0f, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f));
+    Camera Camera(glm::vec3(-5.0f, 5.0f, 8.0f), glm::vec3(0.0f, 2.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.5f);
 
     Shader BasicShader("shaders/basic.vert", "shaders/basic.frag");
     float RenderDistance = 100.0f;
     glm::mat4 ModelMatrix(1.0f);
-    glm::mat4 FreeView = glm::lookAt(Camera.mPosition, Camera.mPosition + Camera.mFront, Camera.mUp);
-    glm::mat4 FrontView = glm::lookAt(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    glm::mat4 LeftView = glm::lookAt(glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    glm::mat4 TopView = glm::lookAt(glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    glm::mat4 View = glm::lookAt(Camera.mCameraPosition, Camera.mTargetPosition, Camera.mWorldUp);
 
     Tree Tree;
     Cube SunBase;
@@ -249,7 +294,7 @@ int main() {
     EngineState State = { 0 };
     Input UserInput = { 0 };
     glfwSetWindowUserPointer(Window, &State);
-    State.mOrbitalCamera = &Camera;
+    State.mCamera = &Camera;
     State.mInput = &UserInput;
     State.mRenderer = &Renderer;
 
@@ -258,29 +303,32 @@ int main() {
     float TargetFrameTime = 1.0f / TargetFPS;
 
     glEnable(GL_DEPTH_TEST);
+    glfwSetInputMode(Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     /** NOTE(Jovan) : The main loop from a higher - level overview :
     * Retrieve inputs
     * Update state
     * Render result
     */
-    float sc = 0;
+    float sc = 0;   // sun scale
+    float deltaTime = 0.0f;	// Time between current frame and last frame
+    float lastFrame = 0.0f; // Time of last frame
     while (!glfwWindowShouldClose(Window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(135.0f / 255, 206.0f / 255, 235.0f / 255, 1.0f);
         glfwPollEvents();
 
-        HandleInput(&State);
+        
 
         StartTime = glfwGetTime();
-
+        HandleInput(&State, StartTime, lastFrame, deltaTime);
         glUseProgram(BasicShader.GetId());
-        FreeView = glm::lookAt(Camera.mPosition, Camera.mPosition + Camera.mFront, Camera.mUp);
-        BasicShader.SetView(FreeView);
+        View = glm::lookAt(Camera.mCameraPosition, Camera.mCameraPosition + Camera.mCameraFront, Camera.mCameraUp);
+        BasicShader.SetView(View);
 
 
         // NOTE(Jovan): These calls are expensive and should be optimized by executing
         // them only when the framebuffer's size changes. This is for demo purposes only
-        glm::mat4 Perspective = glm::perspective(45.0f, Renderer.mFramebufferSize.x / (float)Renderer.mFramebufferSize.y, 0.1f, RenderDistance);
+        glm::mat4 Perspective = glm::perspective(glm::radians(Camera.mFOV), (float)WindowWidth / (float)WindowHeight, 0.1f, 100.0f);
         BasicShader.SetProjection(Perspective);
 
         RenderSun(sc, BasicShader, ModelMatrix, SunBase, SunRotated);
@@ -289,11 +337,10 @@ int main() {
         RenderGround(ModelMatrix, BasicShader, Ground);
 
 
-        ModelMatrix = glm::mat4(1.0f);
-        ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 1.0f, 0.0f));
-        ModelMatrix = glm::scale(ModelMatrix, glm::vec3(1));
-        BasicShader.SetModel(ModelMatrix);
-        Tree.Render();
+        RenderTree(ModelMatrix, BasicShader, Tree, glm::vec3(3.0f, 1.0f, 5.0f));
+        RenderTree(ModelMatrix, BasicShader, Tree, glm::vec3(2.0f, 1.0f, -4.0f));
+        RenderTree(ModelMatrix, BasicShader, Tree, glm::vec3(-5.0f, 1.0f, 2.0f));
+        RenderTree(ModelMatrix, BasicShader, Tree, glm::vec3(-2.0f, 1.0f, -3.0f));
 
 
         glUseProgram(0);
@@ -316,10 +363,19 @@ int main() {
     return 0;
 }
 
+void RenderTree(glm::mat4& ModelMatrix, Shader& BasicShader, Tree& Tree, glm::vec3 Position)
+{
+    ModelMatrix = glm::mat4(1.0f);
+    ModelMatrix = glm::translate(ModelMatrix, Position);
+    ModelMatrix = glm::scale(ModelMatrix, glm::vec3(1));
+    BasicShader.SetModel(ModelMatrix);
+    Tree.Render();
+}
+
 void RenderGround(glm::mat4& ModelMatrix, Shader& BasicShader, Ground& Ground)
 {
     ModelMatrix = glm::mat4(1.0f);
-    ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, -5.5f, -10.0f));
+    ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, -4.0f, -10.0f));
     ModelMatrix = glm::scale(ModelMatrix, glm::vec3(10));
     BasicShader.SetModel(ModelMatrix);
     Ground.Render();
@@ -337,16 +393,16 @@ void RenderSun(float& sc, Shader& BasicShader, glm::mat4& ModelMatrix, Cube& Sun
     glUniform1f(offsetLocation, c);
 
     ModelMatrix = glm::mat4(1.0f);
-    ModelMatrix = glm::translate(ModelMatrix, glm::vec3(10.0f, 10.0f, -15.0f));
-    ModelMatrix = glm::rotate(ModelMatrix, glm::radians(45.0f), glm::vec3(8.0f, 8.0f, -15.0f));
+    ModelMatrix = glm::translate(ModelMatrix, glm::vec3(10.0f, 70.0f, -85.0f));
+    ModelMatrix = glm::scale(ModelMatrix, glm::vec3(5));
     ModelMatrix = glm::scale(ModelMatrix, glm::vec3(scale1));
     BasicShader.SetModel(ModelMatrix);
     SunBase.Render();
 
     ModelMatrix = glm::mat4(1.0f);
-    ModelMatrix = glm::translate(ModelMatrix, glm::vec3(10.0f, 10.0f, -15.0f));
+    ModelMatrix = glm::translate(ModelMatrix, glm::vec3(10.0f, 70.0f, -85.0f));
     ModelMatrix = glm::rotate(ModelMatrix, glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ModelMatrix = glm::rotate(ModelMatrix, glm::radians(45.0f), glm::vec3(8.0f, 8.0f, -15.0f));
+    ModelMatrix = glm::scale(ModelMatrix, glm::vec3(5));
     ModelMatrix = glm::scale(ModelMatrix, glm::vec3(scale2));
     BasicShader.SetModel(ModelMatrix);
     SunRotatedX.Render();

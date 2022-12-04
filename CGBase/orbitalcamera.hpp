@@ -14,20 +14,20 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-class Camera {
+class OrbitalCamera {
 public:
     float mFOV;
     float mPitch;
     float mYaw;
+    float mRotateSpeed;
+    float mRadius;
     float mZoomSpeed;
-    float mCameraSpeed;
     glm::vec3 mWorldUp;
-    glm::vec3 mCameraPosition;
-    glm::vec3 mTargetPosition;
-    glm::vec3 mCameraDirection;
-    glm::vec3 mCameraFront;
-    glm::vec3 mCameraUp;
-    glm::vec3 mCameraRight;
+    glm::vec3 mPosition;
+    glm::vec3 mFront;
+    glm::vec3 mUp;
+    glm::vec3 mRight;
+    glm::vec3 mTarget;
 
     /**
      * @brief Ctor
@@ -39,7 +39,7 @@ public:
      * @param worldUp - World Up vector
      * @param target - Point in space the camera's looking at
      */
-    Camera(glm::vec3 CameraPosition, glm::vec3 TargetPosition, glm::vec3 WorldUp, float CameraSpeed);
+    OrbitalCamera(float fov, float distance, float rotateSpeed = 10.0f, float zoomSpeed = 10.0f, const glm::vec3& worldUp = glm::vec3(0.0f, 1.0f, 0.0f), const glm::vec3& target = glm::vec3(0.0f));
 
     /**
      * @brief Rotates the camera
