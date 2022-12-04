@@ -1,0 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\objects">
+      <UniqueIdentifier>{f0e6fdbe-62a1-4fbf-96ff-a2a56c439e19}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\objects\tree">
+      <UniqueIdentifier>{be987d01-5b5a-488b-8304-62179b91f681}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\objects">
+      <UniqueIdentifier>{e40f8159-9f4d-449f-ab72-27b9231375bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\objects\tree">
+      <UniqueIdentifier>{015adba8-2069-480f-bb7c-f0c0886323e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\camera">
+      <UniqueIdentifier>{9c04464a-0771-49a3-9109-fb5b0c9f04fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\camera">
+      <UniqueIdentifier>{ffd72f83-6e9c-4f52-933e-5428f8630a81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\objects\cube">
+      <UniqueIdentifier>{082ec6a8-701a-468f-ab5e-d64f90134458}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\objects\cube">
+      <UniqueIdentifier>{e502e8ab-62c9-4996-bbc0-06ef08827194}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\objects\ground">
+      <UniqueIdentifier>{bea32c0d-efc6-4342-b599-47aca4126f0f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\objects\ground">
+      <UniqueIdentifier>{1a5fa9ba-5faa-4b4e-a29c-9b00f90052e8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tree.cpp">
+      <Filter>Source Files\objects\tree</Filter>
+    </ClCompile>
+    <ClCompile Include="buffer.cpp">
+      <Filter>Source Files\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="camera.cpp">
+      <Filter>Source Files\camera</Filter>
+    </ClCompile>
+    <ClCompile Include="treebuffer.cpp">
+      <Filter>Source Files\objects\tree</Filter>
+    </ClCompile>
+    <ClCompile Include="cube.cpp">
+      <Filter>Source Files\objects\cube</Filter>
+    </ClCompile>
+    <ClCompile Include="cubebuffer.cpp">
+      <Filter>Source Files\objects\cube</Filter>
+    </ClCompile>
+    <ClCompile Include="ground.cpp">
+      <Filter>Source Files\objects\ground</Filter>
+    </ClCompile>
+    <ClCompile Include="groundbuffer.cpp">
+      <Filter>Source Files\objects\ground</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="shaders\basic.vert" />
+    <None Include="shaders\basic.frag" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="shader.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="model.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mesh.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tree.hpp">
+      <Filter>Header Files\objects\tree</Filter>
+    </ClInclude>
+    <ClInclude Include="irenderable.hpp">
+      <Filter>Header Files\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="ibufferable.hpp">
+      <Filter>Header Files\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="treebuffer.hpp">
+      <Filter>Header Files\objects\tree</Filter>
+    </ClInclude>
+    <ClInclude Include="buffer.hpp">
+      <Filter>Header Files\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="camera.hpp">
+      <Filter>Header Files\camera</Filter>
+    </ClInclude>
+    <ClInclude Include="cube.hpp">
+      <Filter>Header Files\objects\cube</Filter>
+    </ClInclude>
+    <ClInclude Include="cubebuffer.hpp">
+      <Filter>Header Files\objects\cube</Filter>
+    </ClInclude>
+    <ClInclude Include="ground.hpp">
+      <Filter>Header Files\objects\ground</Filter>
+    </ClInclude>
+    <ClInclude Include="groundbuffer.hpp">
+      <Filter>Header Files\objects\ground</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
