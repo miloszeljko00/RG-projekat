@@ -31,6 +31,8 @@
 #include "camera.hpp"
 #include "model.hpp"
 #include "ground.hpp"
+#include "mountain.hpp"
+#include "moon.hpp"
 
 const int WindowWidth = 800;
 const int WindowHeight = 800;
@@ -55,6 +57,7 @@ struct Renderer {
     std::vector<IRenderable*> mRenderables;
     glm::vec2 mFramebufferSize;
     float mScalingFactor;
+    bool IsDay;
 };
 
 struct EngineState {
@@ -194,18 +197,24 @@ static void HandleInput(EngineState* state, float &currentFrame, float &lastFram
         std::cout << "W pressed." << std::endl;
     }
     if (UserInput->ChangeRenderable) {
-        Renderer->mCurrRenderableIdx = ++Renderer->mCurrRenderableIdx % Renderer->mRenderables.size();
-        Renderer->mCurrRenderable = Renderer->mRenderables[Renderer->mCurrRenderableIdx];
-        UserInput->ChangeRenderable ^= true;
+        Renderer->IsDay = !Renderer->IsDay;
         std::cout << "R pressed." << std::endl;
     }
 }
 
-void RenderSun(float& sc, Shader& BasicShader, glm::mat4& ModelMatrix, Cube& SunBase, Cube& SunRotatedX);
+void RenderSun(float& sc, Shader& BasicShader, glm::mat4& ModelMatrix, Cube& SunBase, Cube& SunRotated);
 
 void RenderGround(glm::mat4& ModelMatrix, Shader& BasicShader, Ground& Ground);
 
 void RenderTree(glm::mat4& ModelMatrix, Shader& BasicShader, Tree& Tree, glm::vec3 Position);
+
+void RenderMountain(glm::mat4& ModelMatrix, glm::vec3 Position, Shader& BasicShader, Mountain& Mountain, float scale);
+
+void RenderDragon(glm::mat4& ModelMatrix, Shader& BasicShader, Model& Dragon);
+
+void RenderSteve(glm::mat4& ModelMatrix, Shader& BasicShader, Model& Steve);
+
+void RenderMoon(float& sc, Shader& BasicShader, glm::mat4& ModelMatrix, Moon& MoonBase, Moon& MoonRotated);
 
 int main() {
     GLFWwindow* Window = 0;
@@ -239,7 +248,7 @@ int main() {
         return -1;
     }
 
-    Camera Camera(glm::vec3(-5.0f, 5.0f, 8.0f), glm::vec3(0.0f, 2.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.5f);
+    Camera Camera(glm::vec3(6.5f, 4.0f, 4.5f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.5f);
 
     Shader BasicShader("shaders/basic.vert", "shaders/basic.frag");
     float RenderDistance = 100.0f;
@@ -249,48 +258,27 @@ int main() {
     Tree Tree;
     Cube SunBase;
     Cube SunRotated;
+    Moon MoonBase;
+    Moon MoonRotated;
     Ground Ground;
-    Model Fox("res/low-poly-fox/low-poly-fox.obj");
-    if (!Fox.Load()) {
+    Mountain Mountain;
+    Model Steve("res/steve/steve.obj");
+    if (!Steve.Load()) {
+        std::cerr << "Failed to load model" << std::endl;
+        glfwTerminate();
+        return -1;
+    }
+    Model Dragon("res/dragon/dragon.obj");
+    if (!Dragon.Load()) {
         std::cerr << "Failed to load model" << std::endl;
         glfwTerminate();
         return -1;
     }
 
-    Model Alduin("res/alduin/alduin-dragon.obj");
-    if (!Alduin.Load()) {
-        std::cerr << "Failed to load model" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-
-    Model Amongus("res/amongus/amongus.obj");
-    if (!Amongus.Load()) {
-        std::cerr << "Failed to load model" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-
-    Model Spider("res/spider/spider.obj");
-    if (!Spider.Load()) {
-        std::cerr << "Failed to load model" << std::endl;
-        glfwTerminate();
-        return -1;
-    } 
 
     Renderer Renderer = { 0 };
     Renderer.mFramebufferSize = glm::vec2(WindowWidth, WindowHeight);
-    Renderer.mRenderables.push_back(&SunBase);
-    Renderer.mRenderables.push_back(&SunRotated);
-    Renderer.mRenderables.push_back(&Ground);
-    Renderer.mRenderables.push_back(&Tree);
-    Renderer.mRenderables.push_back(&Amongus);
-    Renderer.mRenderables.push_back(&Fox);
-    Renderer.mRenderables.push_back(&Alduin);
-    Renderer.mRenderables.push_back(&Spider);
-    Renderer.mCurrRenderable = Renderer.mRenderables[0];
-    Renderer.mScalingFactor = 1.0f;
-
+    Renderer.IsDay = true;
     EngineState State = { 0 };
     Input UserInput = { 0 };
     glfwSetWindowUserPointer(Window, &State);
@@ -303,6 +291,8 @@ int main() {
     float TargetFrameTime = 1.0f / TargetFPS;
 
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
     glfwSetInputMode(Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     /** NOTE(Jovan) : The main loop from a higher - level overview :
     * Retrieve inputs
@@ -314,7 +304,10 @@ int main() {
     float lastFrame = 0.0f; // Time of last frame
     while (!glfwWindowShouldClose(Window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glClearColor(135.0f / 255, 206.0f / 255, 235.0f / 255, 1.0f);
+        if(Renderer.IsDay)
+            glClearColor(135.0f / 255, 206.0f / 255, 235.0f / 255, 1.0f);
+        else
+            glClearColor(7.0f / 255, 0.0f / 255, 88.0f / 255, 1.0f);
         glfwPollEvents();
 
         
@@ -330,17 +323,31 @@ int main() {
         // them only when the framebuffer's size changes. This is for demo purposes only
         glm::mat4 Perspective = glm::perspective(glm::radians(Camera.mFOV), (float)WindowWidth / (float)WindowHeight, 0.1f, 100.0f);
         BasicShader.SetProjection(Perspective);
+        
+        if (Renderer.IsDay)
+            RenderSun(sc, BasicShader, ModelMatrix, SunBase, SunRotated);
+        else
+            RenderMoon(sc, BasicShader, ModelMatrix, MoonBase, MoonRotated);
 
-        RenderSun(sc, BasicShader, ModelMatrix, SunBase, SunRotated);
+
 
         
         RenderGround(ModelMatrix, BasicShader, Ground);
 
 
-        RenderTree(ModelMatrix, BasicShader, Tree, glm::vec3(3.0f, 1.0f, 5.0f));
-        RenderTree(ModelMatrix, BasicShader, Tree, glm::vec3(2.0f, 1.0f, -4.0f));
-        RenderTree(ModelMatrix, BasicShader, Tree, glm::vec3(-5.0f, 1.0f, 2.0f));
-        RenderTree(ModelMatrix, BasicShader, Tree, glm::vec3(-2.0f, 1.0f, -3.0f));
+        RenderTree(ModelMatrix, BasicShader, Tree, glm::vec3(3.0f, 0.0f, 5.0f));
+        RenderTree(ModelMatrix, BasicShader, Tree, glm::vec3(5.0f, 0.0f, -4.0f));
+        RenderTree(ModelMatrix, BasicShader, Tree, glm::vec3(-7.0f, 0.0f, 4.0f));
+        RenderTree(ModelMatrix, BasicShader, Tree, glm::vec3(-4.0f, 0.0f, -6.0f));
+
+
+        RenderMountain(ModelMatrix, glm::vec3(-10.0f, 0.0f, -30.0f), BasicShader, Mountain, 7);
+        RenderMountain(ModelMatrix, glm::vec3(0.0f, 0.0f, -30.0f), BasicShader, Mountain, 5);
+        RenderMountain(ModelMatrix, glm::vec3(10.0f, 0.0f, -30.0f), BasicShader, Mountain, 8);
+        
+        RenderSteve(ModelMatrix, BasicShader, Steve);
+
+        RenderDragon(ModelMatrix, BasicShader, Dragon);
 
 
         glUseProgram(0);
@@ -363,6 +370,64 @@ int main() {
     return 0;
 }
 
+void RenderMoon(float& sc, Shader& BasicShader, glm::mat4& ModelMatrix, Moon& MoonBase, Moon& MoonRotated)
+{
+    sc += 0.06;
+    float scale1 = (abs(sin(sc)) + 2.5) / 3;
+    float scale2 = (abs(cos(sc)) + 2.5) / 3;
+
+    float c = (abs(sin(glfwGetTime())) + 2) / 3;
+    unsigned int offsetLocation = glGetUniformLocation(BasicShader.mId, "offset");
+    glUniform1f(offsetLocation, c);
+
+    ModelMatrix = glm::mat4(1.0f);
+    ModelMatrix = glm::translate(ModelMatrix, glm::vec3(-60.0f, 50.0f, -10.0f));
+    ModelMatrix = glm::scale(ModelMatrix, glm::vec3(5));
+    ModelMatrix = glm::scale(ModelMatrix, glm::vec3(scale1));
+    BasicShader.SetModel(ModelMatrix);
+    MoonBase.Render();
+
+    ModelMatrix = glm::mat4(1.0f);
+    ModelMatrix = glm::translate(ModelMatrix, glm::vec3(-60.0f, 50.0f, -10.0f));
+    ModelMatrix = glm::rotate(ModelMatrix, glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ModelMatrix = glm::scale(ModelMatrix, glm::vec3(5));
+    ModelMatrix = glm::scale(ModelMatrix, glm::vec3(scale2));
+    BasicShader.SetModel(ModelMatrix);
+    MoonRotated.Render();
+
+    glUniform1f(offsetLocation, 1);
+}
+
+
+void RenderSteve(glm::mat4& ModelMatrix, Shader& BasicShader, Model& Steve)
+{
+    ModelMatrix = glm::mat4(1.0f);
+    ModelMatrix = glm::translate(ModelMatrix, glm::vec3(2.1f, 2.2f, 1.0f));
+    ModelMatrix = glm::scale(ModelMatrix, glm::vec3(0.4));
+    ModelMatrix = glm::rotate(ModelMatrix, glm::radians(130.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    BasicShader.SetModel(ModelMatrix);
+    Steve.Render();
+}
+
+void RenderDragon(glm::mat4& ModelMatrix, Shader& BasicShader, Model& Dragon)
+{
+    ModelMatrix = glm::mat4(1.0f);
+    ModelMatrix = glm::translate(ModelMatrix, glm::vec3(-3.0f, -0.2f, 3.0f));
+    ModelMatrix = glm::scale(ModelMatrix, glm::vec3(0.1));
+    ModelMatrix = glm::rotate(ModelMatrix, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    BasicShader.SetModel(ModelMatrix);
+    Dragon.Render();
+}
+
+void RenderMountain(glm::mat4& ModelMatrix, glm::vec3 Position, Shader& BasicShader, Mountain& Mountain, float scale)
+{
+    ModelMatrix = glm::mat4(1.0f);
+    ModelMatrix = glm::translate(ModelMatrix, Position);
+    ModelMatrix = glm::scale(ModelMatrix, glm::vec3(scale));
+    BasicShader.SetModel(ModelMatrix);
+    Mountain.Render();
+}
+
 void RenderTree(glm::mat4& ModelMatrix, Shader& BasicShader, Tree& Tree, glm::vec3 Position)
 {
     ModelMatrix = glm::mat4(1.0f);
@@ -375,14 +440,14 @@ void RenderTree(glm::mat4& ModelMatrix, Shader& BasicShader, Tree& Tree, glm::ve
 void RenderGround(glm::mat4& ModelMatrix, Shader& BasicShader, Ground& Ground)
 {
     ModelMatrix = glm::mat4(1.0f);
-    ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, -4.0f, -10.0f));
+    ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 0.0f, 0.0f));
     ModelMatrix = glm::scale(ModelMatrix, glm::vec3(10));
     BasicShader.SetModel(ModelMatrix);
     Ground.Render();
 }
 
 
-void RenderSun(float& sc, Shader& BasicShader, glm::mat4& ModelMatrix, Cube& SunBase, Cube& SunRotatedX)
+void RenderSun(float& sc, Shader& BasicShader, glm::mat4& ModelMatrix, Cube& SunBase, Cube& SunRotated)
 {
     sc += 0.06;
     float scale1 = (abs(sin(sc)) + 2.5) / 3;
@@ -393,19 +458,19 @@ void RenderSun(float& sc, Shader& BasicShader, glm::mat4& ModelMatrix, Cube& Sun
     glUniform1f(offsetLocation, c);
 
     ModelMatrix = glm::mat4(1.0f);
-    ModelMatrix = glm::translate(ModelMatrix, glm::vec3(10.0f, 70.0f, -85.0f));
+    ModelMatrix = glm::translate(ModelMatrix, glm::vec3(-60.0f, 50.0f, -10.0f));
     ModelMatrix = glm::scale(ModelMatrix, glm::vec3(5));
     ModelMatrix = glm::scale(ModelMatrix, glm::vec3(scale1));
     BasicShader.SetModel(ModelMatrix);
     SunBase.Render();
 
     ModelMatrix = glm::mat4(1.0f);
-    ModelMatrix = glm::translate(ModelMatrix, glm::vec3(10.0f, 70.0f, -85.0f));
+    ModelMatrix = glm::translate(ModelMatrix, glm::vec3(-60.0f, 50.0f, -10.0f));
     ModelMatrix = glm::rotate(ModelMatrix, glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     ModelMatrix = glm::scale(ModelMatrix, glm::vec3(5));
     ModelMatrix = glm::scale(ModelMatrix, glm::vec3(scale2));
     BasicShader.SetModel(ModelMatrix);
-    SunRotatedX.Render();
+    SunRotated.Render();
 
     glUniform1f(offsetLocation, 1);
 }

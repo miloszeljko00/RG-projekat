@@ -43,6 +43,18 @@
     <Filter Include="Source Files\objects\ground">
       <UniqueIdentifier>{1a5fa9ba-5faa-4b4e-a29c-9b00f90052e8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\objects\mountain">
+      <UniqueIdentifier>{fc68e373-d5b9-43e3-8de7-1680d7a9dc92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\objects\mountain">
+      <UniqueIdentifier>{4c2c55c8-d681-4c30-8fc5-6206fdee1107}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\objects\moon">
+      <UniqueIdentifier>{38dbeae7-e52f-469b-809b-8f2a66778260}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\objects\moon">
+      <UniqueIdentifier>{669cbc26-0d7a-4559-8826-d556db5ec214}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -83,6 +95,18 @@
     </ClCompile>
     <ClCompile Include="camera.cpp">
       <Filter>Source Files\camera</Filter>
+    </ClCompile>
+    <ClCompile Include="mountain.cpp">
+      <Filter>Source Files\objects\mountain</Filter>
+    </ClCompile>
+    <ClCompile Include="mountainbuffer.cpp">
+      <Filter>Source Files\objects\mountain</Filter>
+    </ClCompile>
+    <ClCompile Include="moon.cpp">
+      <Filter>Source Files\objects\moon</Filter>
+    </ClCompile>
+    <ClCompile Include="moonbuffer.cpp">
+      <Filter>Source Files\objects\moon</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -132,6 +156,18 @@
     </ClInclude>
     <ClInclude Include="camera.hpp">
       <Filter>Header Files\camera</Filter>
+    </ClInclude>
+    <ClInclude Include="mountain.hpp">
+      <Filter>Header Files\objects\mountain</Filter>
+    </ClInclude>
+    <ClInclude Include="mountainbuffer.hpp">
+      <Filter>Header Files\objects\mountain</Filter>
+    </ClInclude>
+    <ClInclude Include="moon.hpp">
+      <Filter>Header Files\objects\moon</Filter>
+    </ClInclude>
+    <ClInclude Include="moonbuffer.hpp">
+      <Filter>Header Files\objects\moon</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

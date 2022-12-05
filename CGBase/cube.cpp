@@ -2,8 +2,8 @@
 #include "cubebuffer.hpp"
 
 Cube::Cube() {
-    CubeBuffer SunBuffer;
-    mBuffer = new Buffer(SunBuffer);
+    CubeBuffer CubeBuffer;
+    mBuffer = new Buffer(CubeBuffer);
 }
 
 void Cube::Render() {

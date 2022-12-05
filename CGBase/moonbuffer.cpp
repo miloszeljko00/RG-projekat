@@ -1,10 +1,10 @@
-#include "cubebuffer.hpp"
+#include "moonbuffer.hpp"
 
-const float r = 255.0f / 255.0f;
-const float g = 255.0f / 255.0f;
-const float b = 0.0f / 255.0f;
+const float r = 254.0f / 255.0f;
+const float g = 252.0f / 255.0f;
+const float b = 215.0f / 255.0f;
 
-std::vector<float> CubeBuffer::mVertices = {
+std::vector<float> MoonBuffer::mVertices = {
     //      POS        |      COLOURS   
     //X     Y      Z      R     G     B
 
@@ -17,22 +17,22 @@ std::vector<float> CubeBuffer::mVertices = {
     0.5f, -0.5f,  0.5f,  r,g,b,
    -0.5f, -0.5f,  0.5f,  r,g,b,
 
-    //      leva stranica kocke
-   -0.5f,  0.5f,  0.5f,  r,g,b,
-   -0.5f,  0.5f, -0.5f,  r,g,b,
-   -0.5f, -0.5f, -0.5f,  r,g,b,
-   -0.5f, -0.5f,  -0.5f, r,g,b,
-   -0.5f, -0.5f,  0.5f,  r,g,b,
-   -0.5f,  0.5f,  0.5f,  r,g,b,
-
-
-   //      prednja stranica kocke
+   //      leva stranica kocke
   -0.5f,  0.5f,  0.5f,  r,g,b,
+  -0.5f,  0.5f, -0.5f,  r,g,b,
+  -0.5f, -0.5f, -0.5f,  r,g,b,
+  -0.5f, -0.5f,  -0.5f, r,g,b,
   -0.5f, -0.5f,  0.5f,  r,g,b,
-   0.5f,  0.5f,  0.5f,  r,g,b,
-  -0.5f, -0.5f,  0.5f,  r,g,b,
-   0.5f, -0.5f,  0.5f,  r,g,b,
-   0.5f,  0.5f,  0.5f,  r,g,b,
+  -0.5f,  0.5f,  0.5f,  r,g,b,
+
+
+  //      prednja stranica kocke
+ -0.5f,  0.5f,  0.5f,  r,g,b,
+ -0.5f, -0.5f,  0.5f,  r,g,b,
+  0.5f,  0.5f,  0.5f,  r,g,b,
+ -0.5f, -0.5f,  0.5f,  r,g,b,
+  0.5f, -0.5f,  0.5f,  r,g,b,
+  0.5f,  0.5f,  0.5f,  r,g,b,
 
   //      Gornja stranica kocke
   -0.5f,  0.5f,  0.5f,  r,g,b,
@@ -59,16 +59,16 @@ std::vector<float> CubeBuffer::mVertices = {
    -0.5f, -0.5f, -0.5f,  r,g,b,
 };
 
-CubeBuffer::CubeBuffer() {}
+MoonBuffer::MoonBuffer() {}
 
-float* CubeBuffer::GetVertices() {
+float* MoonBuffer::GetVertices() {
     return mVertices.data();
 }
 
-unsigned CubeBuffer::GetVertexCount() {
+unsigned MoonBuffer::GetVertexCount() {
     return mVertices.size();
 }
 
-unsigned CubeBuffer::GetVertexElementCount() {
+unsigned MoonBuffer::GetVertexElementCount() {
     return 6;
 }

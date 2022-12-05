@@ -9,54 +9,14 @@ std::vector<float> GroundBuffer::mVertices = {
     //X     Y      Z      R     G     B
 
 
-    //      Donja stranica kocke
-   -10.5f, -0.5f, -10.5f,  r,g,b,
-    10.5f, -0.5f, -10.5f,  r,g,b,
-   -10.5f, -0.5f,  10.5f,  r,g,b,
-   -10.5f, -0.5f,  10.5f,  r,g,b,
-    10.5f, -0.5f,  10.5f,  r,g,b,
-    10.5f, -0.5f, -10.5f,  r,g,b,
+    //   podloga
+   -10.0f, 0.0f, -10.0f,  r,g,b,
+   -10.0f, 0.0f,  10.0f,  r,g,b,
+    10.0f, 0.0f,  10.0f,  r,g,b,
+    10.0f, 0.0f,  10.0f,  r,g,b,
+    10.0f, 0.0f, -10.0f,  r,g,b,
+   -10.0f, 0.0f, -10.0f,  r,g,b,
 
-    //      leva stranica kocke
-   -10.5f, -0.5f, -10.5f,  r,g,b,
-   -10.5f,  0.5f, -10.5f,  r,g,b,
-   -10.5f,  0.5f,  10.5f,  r,g,b,
-   -10.5f,  0.5f,  10.5f,  r,g,b,
-   -10.5f, -0.5f,  10.5f,  r,g,b,
-   -10.5f, -0.5f, -10.5f, r,g,b,
-
-
-   //      prednja stranica kocke
-  -10.5f,  0.5f,  10.5f,  r,g,b,
-  -10.5f, -0.5f,  10.5f,  r,g,b,
-   10.5f,  0.5f,  10.5f,  r,g,b,
-   10.5f,  0.5f,  10.5f,  r,g,b,
-   10.5f, -0.5f,  10.5f,  r,g,b,
-  -10.5f, -0.5f,  10.5f,  r,g,b,
-
-  //      Gornja stranica kocke
-  -10.5f,  0.5f, -10.5f,  r,g,b,
-   10.5f,  0.5f, -10.5f,  r,g,b,
-  -10.5f,  0.5f,  10.5f,  r,g,b,
-  -10.5f,  0.5f,  10.5f,  r,g,b,
-   10.5f,  0.5f,  10.5f,  r,g,b,
-   10.5f,  0.5f, -10.5f,  r,g,b,
-
-   //      desna stranica kocke
-   10.5f, -0.5f, -0.5f,  r,g,b,
-   10.5f,  0.5f, -0.5f,  r,g,b,
-   10.5f,  0.5f,  0.5f,  r,g,b,
-   10.5f,  0.5f,  0.5f,  r,g,b,
-   10.5f, -0.5f,  0.5f,  r,g,b,
-   10.5f, -0.5f, -0.5f,  r,g,b,
-
-   //      zadnja stranica kocke
-   -10.5f,  0.5f, -0.5f,  r,g,b,
-   -10.5f, -0.5f, -0.5f,  r,g,b,
-    10.5f,  0.5f, -0.5f,  r,g,b,
-    10.5f,  0.5f, -0.5f,  r,g,b,
-    10.5f, -0.5f, -0.5f,  r,g,b,
-   -10.5f, -0.5f, -0.5f,  r,g,b,
 };
 
 GroundBuffer::GroundBuffer() {}

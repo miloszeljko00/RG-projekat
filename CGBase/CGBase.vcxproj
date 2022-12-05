@@ -143,6 +143,10 @@
   <ItemGroup>
     <ClCompile Include="buffer.cpp" />
     <ClCompile Include="camera.cpp" />
+    <ClCompile Include="moon.cpp" />
+    <ClCompile Include="moonbuffer.cpp" />
+    <ClCompile Include="mountain.cpp" />
+    <ClCompile Include="mountainbuffer.cpp" />
     <ClCompile Include="orbitalcamera.cpp" />
     <ClCompile Include="ground.cpp" />
     <ClCompile Include="groundbuffer.cpp" />
@@ -163,6 +167,10 @@
   <ItemGroup>
     <ClInclude Include="buffer.hpp" />
     <ClInclude Include="camera.hpp" />
+    <ClInclude Include="moon.hpp" />
+    <ClInclude Include="moonbuffer.hpp" />
+    <ClInclude Include="mountain.hpp" />
+    <ClInclude Include="mountainbuffer.hpp" />
     <ClInclude Include="orbitalcamera.hpp" />
     <ClInclude Include="ground.hpp" />
     <ClInclude Include="groundbuffer.hpp" />
