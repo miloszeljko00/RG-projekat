@@ -1,9 +1,9 @@
 /**
  * @file model.hpp
- * @author Milos Zeljko
+ * @author Jovan Ivosevic
  * @brief Model wrapper class
  * @version 0.1
- * @date 2022-12-01
+ * @date 2022-10-09
  *
  * @copyright Copyright (c) 2022
  *
@@ -21,13 +21,13 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "shader.hpp"
 #include "mesh.hpp"
-#include "buffer.hpp"
-#include "irenderable.hpp"
-
 
 #define POSITION_LOCATION 0
+#define NORMAL_LOCATION 1
 
-#define POSTPROCESS_FLAGS (aiProcess_Triangulate | aiProcess_FlipUVs)
+#define POSTPROCESS_FLAGS (aiProcess_Triangulate)
+ // TOOD(Jovan): IF model loads with bad textures, use this instead:
+ // #define POSTPROCESS_FLAGS (aiProcess_Triangulate | aiProcess_FlipUVs)
 #define INVALID_MATERIAL 0xFFFFFFFF
 
 enum EBufferType {
@@ -38,13 +38,9 @@ enum EBufferType {
     BUFFER_COUNT = 4,
 };
 
-class Model : public IRenderable {
+class Model {
 private:
     std::vector<Mesh> mMeshes;
-    std::vector<Buffer> mMeshBuffers;
-    unsigned mVAO;
-    unsigned mNumVertices;
-    unsigned mNumIndices;
 
 public:
     std::string mFilename;

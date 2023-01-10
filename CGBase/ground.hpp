@@ -18,7 +18,7 @@
 
 class Ground : public IRenderable {
 public:
-
+    Buffer* mBuffer;
     /**
      * @brief Initializes cube buffer
      *
@@ -32,6 +32,6 @@ public:
      */
     void Render();
 private:
-    Buffer* mBuffer;
+    
 
 };

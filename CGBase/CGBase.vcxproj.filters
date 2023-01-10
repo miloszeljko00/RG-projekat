@@ -108,6 +108,9 @@
     <ClCompile Include="moonbuffer.cpp">
       <Filter>Source Files\objects\moon</Filter>
     </ClCompile>
+    <ClCompile Include="texture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -170,6 +173,9 @@
       <Filter>Header Files\objects\moon</Filter>
     </ClInclude>
     <ClInclude Include="stb_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="texture.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

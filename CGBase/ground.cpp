@@ -2,8 +2,8 @@
 #include "groundbuffer.hpp"
 
 Ground::Ground() {
-    GroundBuffer SunBuffer;
-    mBuffer = new Buffer(SunBuffer);
+    GroundBuffer GroundBuffer;
+    mBuffer = new Buffer(GroundBuffer);
 }
 
 void Ground::Render() {

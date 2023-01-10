@@ -3,11 +3,10 @@
 Model::Model(std::string filename) {
     mFilename = filename;
     mDirectory = filename.substr(0, filename.find_last_of('/'));
-    mNumVertices = 0;
-    mNumIndices = 0;
 }
 
-bool Model::Load() {
+bool
+Model::Load() {
     Assimp::Importer Importer;
     const aiScene* Scene = Importer.ReadFile(mFilename, POSTPROCESS_FLAGS);
 
@@ -17,19 +16,19 @@ bool Model::Load() {
     }
     mMeshes.reserve(Scene->mNumMeshes);
     for (unsigned MeshIdx = 0; MeshIdx < Scene->mNumMeshes; ++MeshIdx) {
-        aiMaterial* MeshMaterial = Scene->mMaterials[Scene->mMeshes[MeshIdx]->mMaterialIndex];
-        Mesh CurrMesh(Scene->mMeshes[MeshIdx], MeshMaterial, mDirectory);
+        aiMesh* CurrAIMesh = Scene->mMeshes[MeshIdx];
+        Mesh CurrMesh(CurrAIMesh, Scene->mMaterials[CurrAIMesh->mMaterialIndex], mDirectory);
         mMeshes.push_back(CurrMesh);
-        mMeshBuffers.push_back(Buffer(CurrMesh));
 
     }
     std::cout << mFilename << " Loaded " << mMeshes.size() << " meshes" << std::endl;
     return true;
 }
 
-void Model::Render() {
+void
+Model::Render() {
     for (unsigned MeshIdx = 0; MeshIdx < mMeshes.size(); ++MeshIdx) {
         Mesh& Mesh = mMeshes[MeshIdx];
-        mMeshBuffers[MeshIdx].Render();
+        mMeshes[MeshIdx].Render();
     }
 }

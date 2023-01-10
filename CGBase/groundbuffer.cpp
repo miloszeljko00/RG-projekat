@@ -3,18 +3,17 @@
 
 
 std::vector<float> GroundBuffer::mVertices = {
-    //      POS        |  TEXTURE   
-    //X     Y      Z      U    V
+    //      POS        |   Normale  | TEXTURE   
+    //X     Y      Z   |  NX NY NZ  |  U  V
 
 
     //   podloga
-   -10.0f, 0.0f, -10.0f,  0.0f, 0.0f, 0.0f,
-   -10.0f, 0.0f,  10.0f,  0.0f, 50.0f, 0.0f,
-    10.0f, 0.0f,  10.0f,  50.0f, 50.0f, 0.0f,
-    10.0f, 0.0f,  10.0f,  50.0f, 50.0f, 0.0f,
-    10.0f, 0.0f, -10.0f,  50.0f, 0.0f, 0.0f,
-   -10.0f, 0.0f, -10.0f,  0.0f, 0.0f, 0.0f,
-
+   -10.0f, 0.0f, -10.0f, 0.0f, 1.0f, 0.0f,  0.0f,  0.0f,
+   -10.0f, 0.0f,  10.0f, 0.0f, 1.0f, 0.0f,  0.0f, 50.0f,
+    10.0f, 0.0f,  10.0f, 0.0f, 1.0f, 0.0f, 50.0f, 50.0f,
+    10.0f, 0.0f,  10.0f, 0.0f, 1.0f, 0.0f, 50.0f, 50.0f,
+    10.0f, 0.0f, -10.0f, 0.0f, 1.0f, 0.0f, 50.0f,  0.0f,
+   -10.0f, 0.0f, -10.0f, 0.0f, 1.0f, 0.0f,  0.0f,  0.0f,
 };
 
 GroundBuffer::GroundBuffer() {}
@@ -28,5 +27,5 @@ unsigned GroundBuffer::GetVertexCount() {
 }
 
 unsigned GroundBuffer::GetVertexElementCount() {
-    return 6;
+    return 8;
 }
