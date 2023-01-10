@@ -1,9 +1,9 @@
 /**
  * @file shader.cpp
- * @author Milos Zeljko
+ * @author Jovan Ivosevic
  * @brief Shader wrapper class
  * @version 0.1
- * @date 2022-12-01
+ * @date 2022-10-09
  *
  * @copyright Copyright (c) 2022
  *
@@ -24,6 +24,22 @@ public:
 
     Shader(const std::string& vShaderPath, const std::string& fShaderPath);
     unsigned GetId() const;
+
+    /**
+     * @brief Sets int uniform value
+     *
+     * @param uniform Name of uniform
+     * @param v Value
+     */
+    void SetUniform1i(const std::string& uniform, int v) const;
+
+    /**
+     * @brief Sets float uniform value
+     *
+     * @param uniform Name of uniform
+     * @param v Value
+     */
+    void SetUniform1f(const std::string& uniform, float v) const;
 
     /**
      * @brief Sets 4x4 matrix uniform value

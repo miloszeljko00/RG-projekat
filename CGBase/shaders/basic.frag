@@ -1,13 +1,14 @@
 #version 330 core
 
-out vec4 FragColour;
+out vec4 FragColor;
+in vec2 UVs;
 
-in vertex_out {
-	vec3 FragColour;
-} FragmentIn;
-
-uniform float offset;
+uniform sampler2D uTexture1;
+uniform sampler2D uTexture2;
+uniform float uInterpolationFactor;
 
 void main() {
-	FragColour = vec4(FragmentIn.FragColour * offset, 1.0f);
+	vec4 Texture1Color = texture(uTexture1, UVs);
+	vec4 Texture2Color = texture(uTexture2, UVs);
+	FragColor = mix(Texture1Color, Texture2Color, clamp(uInterpolationFactor, 0.0f, 1.0f));
 }

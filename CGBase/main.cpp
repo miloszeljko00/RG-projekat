@@ -33,6 +33,8 @@
 #include "ground.hpp"
 #include "mountain.hpp"
 #include "moon.hpp"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 const int WindowWidth = 800;
 const int WindowHeight = 800;
@@ -65,6 +67,8 @@ struct EngineState {
     Input* mInput;
     Renderer* mRenderer;
     float mDT;
+    unsigned mCurrentFilter;
+    float mInterpolation;
 };
 
 /**
@@ -210,11 +214,11 @@ void RenderTree(glm::mat4& ModelMatrix, Shader& BasicShader, Tree& Tree, glm::ve
 
 void RenderMountain(glm::mat4& ModelMatrix, glm::vec3 Position, Shader& BasicShader, Mountain& Mountain, float scale);
 
-void RenderDragon(glm::mat4& ModelMatrix, Shader& BasicShader, Model& Dragon);
-
-void RenderSteve(glm::mat4& ModelMatrix, Shader& BasicShader, Model& Steve);
+void RenderCat(glm::mat4& ModelMatrix, Shader& BasicShader, Model& Cat);
 
 void RenderMoon(float& sc, Shader& BasicShader, glm::mat4& ModelMatrix, Moon& MoonBase, Moon& MoonRotated);
+
+static unsigned LoadImageToTexture(const std::string& filePath);
 
 int main() {
     GLFWwindow* Window = 0;
@@ -251,6 +255,17 @@ int main() {
     Camera Camera(glm::vec3(6.5f, 4.0f, 4.5f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.5f);
 
     Shader BasicShader("shaders/basic.vert", "shaders/basic.frag");
+    glUseProgram(BasicShader.GetId());
+    BasicShader.SetUniform1i("uTexture1", 0);
+    BasicShader.SetUniform1i("uTexture2", 1);
+    /* NOTE(Jovan) : Set interpolation factor:
+    * 0.0f - Uses first texture
+    * 1.0f - Uses second
+    * (0.0f, 1.0f) - Interpolates between the two
+    */
+    BasicShader.SetUniform1f("uInterpolationFactor", 0.0f);
+    glUseProgram(0);
+
     float RenderDistance = 100.0f;
     glm::mat4 ModelMatrix(1.0f);
     glm::mat4 View = glm::lookAt(Camera.mCameraPosition, Camera.mTargetPosition, Camera.mWorldUp);
@@ -262,19 +277,88 @@ int main() {
     Moon MoonRotated;
     Ground Ground;
     Mountain Mountain;
-    Model Steve("res/steve/steve.obj");
-    if (!Steve.Load()) {
-        std::cerr << "Failed to load model" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-    Model Dragon("res/dragon/dragon.obj");
-    if (!Dragon.Load()) {
+    Model Cat("res/cat/cat.obj");
+    if (!Cat.Load()) {
         std::cerr << "Failed to load model" << std::endl;
         glfwTerminate();
         return -1;
     }
 
+
+    unsigned GrassTexture = LoadImageToTexture("res/grass/grass.jpg");
+    glBindTexture(GL_TEXTURE_2D, GrassTexture);
+    // NOTE(Jovan): Generate MipMaps
+    glGenerateMipmap(GL_TEXTURE_2D);
+    // NOTE(Jovan): Possible values: GL_REPEAT, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_BORDER
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    /* NOTE(Jovan):
+    * Possible mipmapping values for GL_TEXTURE_MIN_FILTER:
+    *
+    *  GL_NEAREST_MIPMAP_NEAREST
+    *  GL_NEAREST_MIPMAP_LINEAR
+    *  GL_LINEAR_MIPMAP_NEAREST
+    *  GL_LINEAR_MIPMAP_LINEAR
+    *
+    * Two parts define the mipmapping algorithm
+    * First - mipmap image picking
+    *   NEAREST - Choose the mipmap that most closely matches the size of the pixel being textured
+    *   LINEAR - Chooses two mipmaps that most closely match the size of the pixel being textured
+    * Second - Color interpolation from picked image(s)
+    *   NEAREST - Nearest neighbour algorithm
+    *   LINEAR - Linear interpolation
+    */
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+    // NOTE(Jovan): Possible values: GL_NEAREST, GL_LINEAR. NO MIPMAPPING!
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+
+    unsigned WoodTexture = LoadImageToTexture("res/wood/wood.png");
+    glBindTexture(GL_TEXTURE_2D, WoodTexture);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    unsigned SunTexture = LoadImageToTexture("res/sun/sun.png");
+    glBindTexture(GL_TEXTURE_2D, SunTexture);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    unsigned MoonTexture = LoadImageToTexture("res/sun/moon.png");
+    glBindTexture(GL_TEXTURE_2D, MoonTexture);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    unsigned StoneTexture = LoadImageToTexture("res/stone/stone.jpg");
+    glBindTexture(GL_TEXTURE_2D, StoneTexture);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+
+    unsigned CatTexture = LoadImageToTexture("res/cat/cat-diffuse.jpg");
+    glBindTexture(GL_TEXTURE_2D, CatTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
     Renderer Renderer = { 0 };
     Renderer.mFramebufferSize = glm::vec2(WindowWidth, WindowHeight);
@@ -289,6 +373,7 @@ int main() {
     float StartTime = glfwGetTime();
     float EndTime = glfwGetTime();
     float TargetFrameTime = 1.0f / TargetFPS;
+    glUseProgram(BasicShader.GetId());
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
@@ -310,7 +395,6 @@ int main() {
             glClearColor(7.0f / 255, 0.0f / 255, 88.0f / 255, 1.0f);
         glfwPollEvents();
 
-        
 
         StartTime = glfwGetTime();
         HandleInput(&State, StartTime, lastFrame, deltaTime);
@@ -324,30 +408,54 @@ int main() {
         glm::mat4 Perspective = glm::perspective(glm::radians(Camera.mFOV), (float)WindowWidth / (float)WindowHeight, 0.1f, 100.0f);
         BasicShader.SetProjection(Perspective);
         
-        if (Renderer.IsDay)
+        if (Renderer.IsDay) {
+            BasicShader.SetUniform1f("uInterpolationFactor", 0.0f);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, SunTexture);
             RenderSun(sc, BasicShader, ModelMatrix, SunBase, SunRotated);
-        else
+        }            
+        else {
+            BasicShader.SetUniform1f("uInterpolationFactor", 0.0f);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, MoonTexture);
             RenderMoon(sc, BasicShader, ModelMatrix, MoonBase, MoonRotated);
+        }
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+            
 
 
 
-        
+        // NOTE(Jovan): Using only one texture, so setting interpolation to 0.0f
+        BasicShader.SetUniform1f("uInterpolationFactor", 0.0f);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, GrassTexture);
         RenderGround(ModelMatrix, BasicShader, Ground);
+        glBindTexture(GL_TEXTURE_2D, 0);
 
-
+        BasicShader.SetUniform1f("uInterpolationFactor", 0.0f);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, WoodTexture);
         RenderTree(ModelMatrix, BasicShader, Tree, glm::vec3(3.0f, 0.0f, 5.0f));
         RenderTree(ModelMatrix, BasicShader, Tree, glm::vec3(5.0f, 0.0f, -4.0f));
         RenderTree(ModelMatrix, BasicShader, Tree, glm::vec3(-7.0f, 0.0f, 4.0f));
         RenderTree(ModelMatrix, BasicShader, Tree, glm::vec3(-4.0f, 0.0f, -6.0f));
+        glBindTexture(GL_TEXTURE_2D, 0);
 
-
+        BasicShader.SetUniform1f("uInterpolationFactor", 0.0f);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, StoneTexture);
         RenderMountain(ModelMatrix, glm::vec3(-10.0f, 0.0f, -30.0f), BasicShader, Mountain, 7);
         RenderMountain(ModelMatrix, glm::vec3(0.0f, 0.0f, -30.0f), BasicShader, Mountain, 5);
         RenderMountain(ModelMatrix, glm::vec3(10.0f, 0.0f, -30.0f), BasicShader, Mountain, 8);
-        
-        RenderSteve(ModelMatrix, BasicShader, Steve);
+        glBindTexture(GL_TEXTURE_2D, 0);
 
-        RenderDragon(ModelMatrix, BasicShader, Dragon);
+
+        BasicShader.SetUniform1f("uInterpolationFactor", 0.0f);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, CatTexture);
+        RenderCat(ModelMatrix, BasicShader, Cat);
+        glBindTexture(GL_TEXTURE_2D, 0);
 
 
         glUseProgram(0);
@@ -376,9 +484,9 @@ void RenderMoon(float& sc, Shader& BasicShader, glm::mat4& ModelMatrix, Moon& Mo
     float scale1 = (abs(sin(sc)) + 2.5) / 3;
     float scale2 = (abs(cos(sc)) + 2.5) / 3;
 
-    float c = (abs(sin(glfwGetTime())) + 2) / 3;
+   /* float c = (abs(sin(glfwGetTime())) + 2) / 3;
     unsigned int offsetLocation = glGetUniformLocation(BasicShader.mId, "offset");
-    glUniform1f(offsetLocation, c);
+    glUniform1f(offsetLocation, c);*/
 
     ModelMatrix = glm::mat4(1.0f);
     ModelMatrix = glm::translate(ModelMatrix, glm::vec3(-60.0f, 50.0f, -10.0f));
@@ -395,29 +503,21 @@ void RenderMoon(float& sc, Shader& BasicShader, glm::mat4& ModelMatrix, Moon& Mo
     BasicShader.SetModel(ModelMatrix);
     MoonRotated.Render();
 
-    glUniform1f(offsetLocation, 1);
+    //glUniform1f(offsetLocation, 1);
 }
 
 
-void RenderSteve(glm::mat4& ModelMatrix, Shader& BasicShader, Model& Steve)
+void RenderCat(glm::mat4& ModelMatrix, Shader& BasicShader, Model& Cat)
 {
     ModelMatrix = glm::mat4(1.0f);
-    ModelMatrix = glm::translate(ModelMatrix, glm::vec3(2.1f, 2.2f, 1.0f));
-    ModelMatrix = glm::scale(ModelMatrix, glm::vec3(0.4));
-    ModelMatrix = glm::rotate(ModelMatrix, glm::radians(130.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    ModelMatrix = glm::translate(ModelMatrix, glm::vec3(2.1f, 0.0f, 1.0f));
+    ModelMatrix = glm::scale(ModelMatrix, glm::vec3(0.03));
+    ModelMatrix = glm::rotate(ModelMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    ModelMatrix = glm::rotate(ModelMatrix, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     BasicShader.SetModel(ModelMatrix);
-    Steve.Render();
+    Cat.Render();
 }
 
-void RenderDragon(glm::mat4& ModelMatrix, Shader& BasicShader, Model& Dragon)
-{
-    ModelMatrix = glm::mat4(1.0f);
-    ModelMatrix = glm::translate(ModelMatrix, glm::vec3(-3.0f, -0.2f, 3.0f));
-    ModelMatrix = glm::scale(ModelMatrix, glm::vec3(0.1));
-    ModelMatrix = glm::rotate(ModelMatrix, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    BasicShader.SetModel(ModelMatrix);
-    Dragon.Render();
-}
 
 void RenderMountain(glm::mat4& ModelMatrix, glm::vec3 Position, Shader& BasicShader, Mountain& Mountain, float scale)
 {
@@ -453,9 +553,9 @@ void RenderSun(float& sc, Shader& BasicShader, glm::mat4& ModelMatrix, Cube& Sun
     float scale1 = (abs(sin(sc)) + 2.5) / 3;
     float scale2 = (abs(cos(sc)) + 2.5) / 3;
 
-    float c = (abs(sin(glfwGetTime())) + 2) / 3;
+    /*float c = (abs(sin(glfwGetTime())) + 2) / 3;
     unsigned int offsetLocation = glGetUniformLocation(BasicShader.mId, "offset");
-    glUniform1f(offsetLocation, c);
+    glUniform1f(offsetLocation, c);*/
 
     ModelMatrix = glm::mat4(1.0f);
     ModelMatrix = glm::translate(ModelMatrix, glm::vec3(-60.0f, 50.0f, -10.0f));
@@ -472,8 +572,44 @@ void RenderSun(float& sc, Shader& BasicShader, glm::mat4& ModelMatrix, Cube& Sun
     BasicShader.SetModel(ModelMatrix);
     SunRotated.Render();
 
-    glUniform1f(offsetLocation, 1);
+    //glUniform1f(offsetLocation, 1);
 }
 
+/**
+ * @brief Loads image file and creates an OpenGL texture.
+ * NOTE: Try avoiding .jpg and other lossy compression formats as
+ * they are uncompressed during loading and the memory benefit is
+ * negated with the addition of loss of quality
+ *
+ * @param filePath Image file path
+ * @returns TextureID
+ */
+static unsigned
+LoadImageToTexture(const std::string& filePath) {
+    int TextureWidth;
+    int TextureHeight;
+    int TextureChannels;
+    unsigned char* ImageData = stbi_load(filePath.c_str(), &TextureWidth, &TextureHeight, &TextureChannels, 0);
+    // NOTE(Jovan): Images should usually flipped vertically as they are loaded "upside-down"
+    stbi__vertical_flip(ImageData, TextureWidth, TextureHeight, TextureChannels);
+
+    // NOTE(Jovan): Checks or "guesses" the loaded image's format
+    GLint InternalFormat = -1;
+    switch (TextureChannels) {
+    case 1: InternalFormat = GL_RED; break;
+    case 3: InternalFormat = GL_RGB; break;
+    case 4: InternalFormat = GL_RGBA; break;
+    default: InternalFormat = GL_RGB; break;
+    }
+
+    unsigned Texture;
+    glGenTextures(1, &Texture);
+    glBindTexture(GL_TEXTURE_2D, Texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, InternalFormat, TextureWidth, TextureHeight, 0, InternalFormat, GL_UNSIGNED_BYTE, ImageData);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    // NOTE(Jovan): ImageData is no longer necessary in RAM and can be deallocated
+    stbi_image_free(ImageData);
+    return Texture;
+}
 
 

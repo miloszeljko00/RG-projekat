@@ -181,6 +181,7 @@
     <ClInclude Include="shader.hpp" />
     <ClInclude Include="cube.hpp" />
     <ClInclude Include="cubebuffer.hpp" />
+    <ClInclude Include="stb_image.h" />
     <ClInclude Include="tree.hpp" />
     <ClInclude Include="treebuffer.hpp" />
   </ItemGroup>

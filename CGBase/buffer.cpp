@@ -14,7 +14,7 @@ Buffer::Buffer(IBufferable& bufferable) : mEBO(0) {
     glVertexAttribPointer(POSITION_LOCATION, 3, GL_FLOAT, GL_FALSE, Stride, (void*)0);
     glEnableVertexAttribArray(POSITION_LOCATION);
 
-    glVertexAttribPointer(COLOUR_LOCATION, 3, GL_FLOAT, GL_FALSE, Stride, (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(COLOUR_LOCATION, 2, GL_FLOAT, GL_FALSE, Stride, (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(COLOUR_LOCATION);
 
     if (mIndexCount) {
