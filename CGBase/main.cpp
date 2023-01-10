@@ -313,24 +313,24 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glUseProgram(PhongShaderMaterialTexture.GetId());
+        
         if (Renderer.IsDay) {
             glClearColor(135.0f / 255, 206.0f / 255, 235.0f / 255, 1.0f);
-            PhongShaderMaterialTexture.SetUniform3f("uDirLight.Direction", glm::vec3(1.0f, -1.0f, 0.0f));
+            PhongShaderMaterialTexture.SetUniform3f("uDirLight.Direction", glm::vec3(-1.0f, -1.0f, -1.0f));
             PhongShaderMaterialTexture.SetUniform3f("uDirLight.Ka", glm::vec3(0.7f, 0.7f, 0.5f));
             PhongShaderMaterialTexture.SetUniform3f("uDirLight.Kd", glm::vec3(0.7f, 0.7f, 0.5f));
             PhongShaderMaterialTexture.SetUniform3f("uDirLight.Ks", glm::vec3(1.0f));
         }
         else {
             glClearColor(7.0f / 255, 0.0f / 255, 88.0f / 255, 1.0f);
-            PhongShaderMaterialTexture.SetUniform3f("uDirLight.Direction", glm::vec3(1.0f, -1.0f, 0.0f));
+            PhongShaderMaterialTexture.SetUniform3f("uDirLight.Direction", glm::vec3(-1.0f, -1.0f, -1.0f));
             PhongShaderMaterialTexture.SetUniform3f("uDirLight.Ka", glm::vec3(0.1f, 0.1f, 0.1f));
             PhongShaderMaterialTexture.SetUniform3f("uDirLight.Kd", glm::vec3(0.1f, 0.1f, 0.1f));
             PhongShaderMaterialTexture.SetUniform3f("uDirLight.Ks", glm::vec3(1.0f));
         }
-            
         glfwPollEvents();
-
-
+        glUseProgram(PhongShaderMaterialTexture.GetId());
+        
         StartTime = glfwGetTime();
         HandleInput(&State, StartTime, lastFrame, deltaTime);
         View = glm::lookAt(Camera.mCameraPosition, Camera.mCameraPosition + Camera.mCameraFront, Camera.mCameraUp);
@@ -346,6 +346,11 @@ int main() {
         glm::mat4 Perspective = glm::perspective(glm::radians(Camera.mFOV), (float)WindowWidth / (float)WindowHeight, 0.1f, 100.0f);
         PhongShaderMaterialTexture.SetProjection(Perspective);
         
+        // NOTE(Jovan): Diminishes the light's diffuse component by half, tinting it slightly red
+        PhongShaderMaterialTexture.SetUniform1i("uMaterial.Kd", 0);
+        // NOTE(Jovan): Makes the object really shiny
+        PhongShaderMaterialTexture.SetUniform1i("uMaterial.Ks", 0);
+        PhongShaderMaterialTexture.SetUniform1f("uMaterial.Shininess", 0.0f);
         if (Renderer.IsDay) {
             PhongShaderMaterialTexture.SetUniform1f("uInterpolationFactor", 0.0f);
             glActiveTexture(GL_TEXTURE0);
@@ -359,6 +364,12 @@ int main() {
             RenderMoon(sc, PhongShaderMaterialTexture, ModelMatrix, MoonBase, MoonRotated);
         }
         glBindTexture(GL_TEXTURE_2D, 0);
+
+        // NOTE(Jovan): Diminishes the light's diffuse component by half, tinting it slightly red
+        PhongShaderMaterialTexture.SetUniform1i("uMaterial.Kd", 0);
+        // NOTE(Jovan): Makes the object really shiny
+        PhongShaderMaterialTexture.SetUniform1i("uMaterial.Ks", 1);
+        PhongShaderMaterialTexture.SetUniform1f("uMaterial.Shininess", 128.0f);
 
 
         glActiveTexture(GL_TEXTURE0);
